@@ -1,0 +1,56 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/FRC Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/FRC Field": {
+        "Choreo Trajectory": {
+          "arrows": false,
+          "style": "Line"
+        },
+        "EstimatedRobotModules": {
+          "arrows": false,
+          "image": "C:\\Users\\willi\\dev\\choreobetarobot\\swerve_module.png",
+          "length": 0.20000000298023224,
+          "width": 0.20000000298023224
+        },
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "FMSInfo": {
+        "open": true
+      },
+      "LiveWindow": {
+        "open": true
+      },
+      "Shuffleboard": {
+        ".metadata": {
+          "open": true
+        },
+        "open": true
+      },
+      "SmartDashboard": {
+        "Drive": {
+          "open": true
+        },
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}
