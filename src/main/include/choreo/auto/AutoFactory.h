@@ -20,18 +20,18 @@ class AutoFactory {
               ChoreoControllerFunction<SampleType> controller,
               std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
               std::function<bool()> mirrorTrajectory,
-              frc2::Requirements drivebaseRequirements, AutoBindings bindings,
+              frc2::Requirements drivebaseRequirements,
               std::optional<TrajectoryLogger<SampleType>> trajectoryLogger)
       : poseSupplier{std::move(poseSupplier)},
         controller{controller},
         outputChassisSpeeds{std::move(outputChassisSpeeds)},
         mirrorTrajectory{std::move(mirrorTrajectory)},
         drivebaseRequirements{drivebaseRequirements},
-        autoBindings{std::move(bindings)},
+        autoBindings{std::make_shared<AutoBindings>()},
         trajectoryLogger{std::move(trajectoryLogger)} {}
 
-  AutoLoop<SampleType, Year> NewLoop() const {
-    return AutoLoop<SampleType, Year>();
+  AutoLoop<SampleType, Year> NewLoop(std::string_view name) const {
+    return AutoLoop<SampleType, Year>(name);
   }
 
   AutoTrajectory<SampleType, Year> Trajectory(
@@ -50,7 +50,7 @@ class AutoFactory {
         poseSupplier,        controller,
         outputChassisSpeeds, mirrorTrajectory,
         trajectoryLogger,    drivebaseRequirements,
-        loop.GetLoop(),      std::move(autoBindings)};
+        loop.GetLoop(),      autoBindings};
     return autoTraj;
   }
 
@@ -82,8 +82,8 @@ class AutoFactory {
     return autoTraj;
   }
 
-  void Bind(std::string_view name, frc2::CommandPtr cmd) {
-    autoBindings = std::move(autoBindings).Bind(name, cmd);
+  void Bind(std::string_view name, std::function<frc2::CommandPtr()> cmdFactory) {
+    autoBindings->Bind(name, std::move(cmdFactory));
   }
 
  private:
@@ -92,7 +92,7 @@ class AutoFactory {
   std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds;
   std::function<bool()> mirrorTrajectory;
   frc2::Requirements drivebaseRequirements;
-  AutoBindings autoBindings{};
+  std::shared_ptr<AutoBindings> autoBindings;
   std::optional<TrajectoryLogger<SampleType>> trajectoryLogger;
 };
 

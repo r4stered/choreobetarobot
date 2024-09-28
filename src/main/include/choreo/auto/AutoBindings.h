@@ -19,10 +19,10 @@ class AutoBindings {
   AutoBindings(AutoBindings&&) = default;
   AutoBindings& operator=(AutoBindings&&) = default;
 
-  AutoBindings Bind(std::string_view name,
-                    std::function<frc2::CommandPtr()> cmdFactory) && {
+  AutoBindings& Bind(std::string_view name,
+                    std::function<frc2::CommandPtr()> cmdFactory) & {
     bindings.emplace(name, std::move(cmdFactory));
-    return std::move(*this);
+    return *this;
   }
 
   void Merge(AutoBindings&& other) {

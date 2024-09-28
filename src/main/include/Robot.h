@@ -73,7 +73,6 @@ class Robot : public frc::TimedRobot {
       return false;
     },
     {&drivetrain},
-    choreo::AutoBindings{},
     [this](choreo::Trajectory<choreo::SwerveSample> trajectory, bool starting) {
       if(!starting) {
         debugField.GetObject("Choreo Trajectory")->SetPoses({});
@@ -84,7 +83,7 @@ class Robot : public frc::TimedRobot {
     }
   };
 
-  choreo::AutoLoop<choreo::SwerveSample, 2024> loop = autoFactory.NewLoop();
+  choreo::AutoLoop<choreo::SwerveSample, 2024> loop = autoFactory.NewLoop("Auto Loop");
   choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj = autoFactory.Trajectory("Straight", loop);
   frc2::CommandPtr m_autonomousCommand = loop.Cmd().AlongWith(autoTraj.Cmd());
 

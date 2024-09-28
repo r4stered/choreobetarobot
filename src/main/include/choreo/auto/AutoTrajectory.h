@@ -43,7 +43,7 @@ class AutoTrajectory {
                  std::function<bool()> mirrorTrajectory,
                  std::optional<TrajectoryLogger<SampleType>> trajectoryLogger,
                  frc2::Requirements drivebaseRequirements, frc::EventLoop* loop,
-                 AutoBindings bindings)
+                 std::shared_ptr<AutoBindings> autoBindings)
       : name{name},
         trajectory{trajectory},
         poseSupplier{std::move(poseSupplier)},
@@ -54,8 +54,8 @@ class AutoTrajectory {
         drivebaseRequirements{drivebaseRequirements},
         loop(loop),
         offTrigger(loop, [] { return false; }) {
-    for (const auto& [key, val] : bindings.GetBindings()) {
-      (Active() && AtTime(key)).OnTrue(val());
+    for (const auto& [key, cmdFactory] : autoBindings->GetBindings()) {
+      (Active() && AtTime(key)).OnTrue(cmdFactory());
     }
   }
 

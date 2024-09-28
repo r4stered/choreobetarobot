@@ -18,6 +18,8 @@ void Robot::RobotInit() {
     auto turn = -1.0 * frc::ApplyDeadband(controller.GetRightX(), 0.1) * constants::Swerve::kMaxAngularSpeed;
     drivetrain.Drive(forward, strafe, turn);
   }, {&drivetrain}));
+
+  autoFactory.Bind("MARKER 1", []() { return frc2::cmd::Print("Hello from marker 1"); });
 }
 
 void Robot::RobotPeriodic() {
@@ -35,6 +37,7 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
+  drivetrain.ResetPose(autoTraj.GetInitialPose().value(), true);
   m_autonomousCommand.Schedule();
 } 
 
