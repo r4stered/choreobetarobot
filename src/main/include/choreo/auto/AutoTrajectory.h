@@ -45,6 +45,8 @@ template <TrajectorySample SampleType, int Year>
 class AutoTrajectory {
  public:
 
+  AutoTrajectory() = default;
+
   // Delete copy constructor and copy assignment operator
   AutoTrajectory(const AutoTrajectory&) = delete;
   AutoTrajectory& operator=(const AutoTrajectory&) = delete;
@@ -155,8 +157,6 @@ class AutoTrajectory {
           name);
       return offTrigger;
     }
-
-    bool hasTriggered = false;
 
     return frc2::Trigger(loop, [this, timeSinceStart, triggered = false]() mutable {
         if (!isActive) return false;

@@ -19,6 +19,8 @@ void Robot::RobotInit() {
     drivetrain.Drive(forward, strafe, turn);
   }, {&drivetrain}));
 
+  rotationController.EnableContinuousInput(-std::numbers::pi, std::numbers::pi);
+
   autoFactory.Bind("MARKER 1", []() { return frc2::cmd::Print("Hello from marker 1"); });
   autoFactory.Bind("MARKER 2", []() { return frc2::cmd::Print("Hello from marker 2"); });
 }
@@ -38,15 +40,26 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-  autoTraj = std::make_unique<choreo::AutoTrajectory<choreo::SwerveSample, 2024>>(autoFactory.Trajectory("New Path", loop));
-  m_autonomousCommand = loop.Cmd().AlongWith(autoTraj->Cmd());
-  drivetrain.ResetPose(autoTraj->GetInitialPose().value(), true);
+  autoTraj1 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("New Path", loop));
+  autoTraj2 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("Straight", loop));
+  autoTraj3 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("RedTest", loop));
+
+  test = autoTraj1.AtTime(2.5_s);
+  m_autonomousCommand = loop.Cmd().AlongWith(
+    frc2::cmd::Sequence(autoTraj1.Cmd(), autoTraj2.Cmd())
+  );
+  drivetrain.ResetPose(autoTraj1.GetInitialPose().value(), true);
+  //m_autonomousCommand = loop.Cmd().AlongWith(autoTraj3.Cmd());
+  //drivetrain.ResetPose(autoTraj3.GetInitialPose().value(), true);
   if(m_autonomousCommand.has_value()) {
     m_autonomousCommand->Schedule();
   }
 } 
 
 void Robot::AutonomousPeriodic() {
+  if(test.Get()) {
+    fmt::print("Hello from test marker!\n");
+  }
 }
 
 void Robot::AutonomousExit() {}

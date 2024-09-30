@@ -83,8 +83,12 @@ class Robot : public frc::TimedRobot {
     }
   };
   choreo::AutoLoop<choreo::SwerveSample, 2024> loop = autoFactory.NewLoop("Auto Loop");
-  std::unique_ptr<choreo::AutoTrajectory<choreo::SwerveSample, 2024>> autoTraj;
+  choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj1;
+  choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj2;
+  choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj3;
+
 
   std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Field2d debugField;
+  frc2::Trigger test;
 };
