@@ -82,10 +82,9 @@ class Robot : public frc::TimedRobot {
       }
     }
   };
-
   choreo::AutoLoop<choreo::SwerveSample, 2024> loop = autoFactory.NewLoop("Auto Loop");
-  choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj = autoFactory.Trajectory("Straight", loop);
-  frc2::CommandPtr m_autonomousCommand = loop.Cmd().AlongWith(autoTraj.Cmd());
+  std::unique_ptr<choreo::AutoTrajectory<choreo::SwerveSample, 2024>> autoTraj;
 
+  std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Field2d debugField;
 };

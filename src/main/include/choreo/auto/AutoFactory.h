@@ -69,19 +69,6 @@ class AutoFactory {
     return Trajectory(trajectory, loop);
   }
 
-  AutoTrajectory<SampleType, Year> Trajectory(
-      choreo::Trajectory<SampleType> trajectory,
-      AutoLoop<SampleType, Year> loop) const {
-    AutoTrajectory<SampleType, Year> autoTraj{
-        trajectory.name,     trajectory,
-        poseSupplier,        controller,
-        outputChassisSpeeds, mirrorTrajectory,
-        trajectoryLogger,    drivebaseRequirements,
-        loop.GetLoop(),      autoBindings};
-    loop.AddTrajectory(autoTraj);
-    return autoTraj;
-  }
-
   void Bind(std::string_view name, std::function<frc2::CommandPtr()> cmdFactory) {
     autoBindings->Bind(name, std::move(cmdFactory));
   }

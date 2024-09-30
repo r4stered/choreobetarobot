@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <iostream>
 
 #include <fmt/format.h>
 #include <frc/DriverStation.h>
@@ -33,9 +34,25 @@ using TrajectoryLogger = std::function<void(Trajectory<SampleType>, bool)>;
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
 static constexpr frc::ChassisSpeeds DEFAULT_CHASSIS_SPEEDS;
 
+struct ScheduledEvent {
+  units::second_t triggerTime;
+  std::string name;
+  frc2::CommandPtr command;
+  bool hasTriggered = false;
+};
+
 template <TrajectorySample SampleType, int Year>
 class AutoTrajectory {
  public:
+
+  // Delete copy constructor and copy assignment operator
+  AutoTrajectory(const AutoTrajectory&) = delete;
+  AutoTrajectory& operator=(const AutoTrajectory&) = delete;
+
+  // Default move constructor and move assignment operator
+  AutoTrajectory(AutoTrajectory&&) = default;
+  AutoTrajectory& operator=(AutoTrajectory&&) = default;
+
   AutoTrajectory(std::string_view name, Trajectory<SampleType> trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
                  ChoreoControllerFunction<SampleType> controller,
@@ -55,7 +72,18 @@ class AutoTrajectory {
         loop(loop),
         offTrigger(loop, [] { return false; }) {
     for (const auto& [key, cmdFactory] : autoBindings->GetBindings()) {
-      (Active() && AtTime(key)).OnTrue(cmdFactory());
+      AddScheduledEvent(key, cmdFactory());
+    }
+  }
+
+  void AddScheduledEvent(std::string_view eventName, frc2::CommandPtr cmd) {
+    for (const auto& event : trajectory.GetEvents(eventName)) {
+      scheduledEvents.push_back({
+        event.timestamp,
+        std::string(eventName),
+        std::move(cmd),
+        false
+      });
     }
   }
 
@@ -69,7 +97,10 @@ class AutoTrajectory {
     }
     return frc2::FunctionalCommand(
                [this] { return CmdInitialize(); },
-               [this] { return CmdExecute(); },
+               [this] { 
+                CmdExecute();
+                CheckAndTriggerEvents();
+                },
                [this](bool interrupted) { return CmdEnd(interrupted); },
                [this] { return CmdIsFinished(); }, drivebaseRequirements)
         .WithName("Trajectory_" + name);
@@ -127,13 +158,14 @@ class AutoTrajectory {
 
     bool hasTriggered = false;
 
-    return frc2::Trigger(loop, [this, timeSinceStart, hasTriggered]() mutable {
-      units::second_t nowTimestamp = timer.Get();
-      bool result = !hasTriggered && nowTimestamp >= timeSinceStart;
-      if (result) {
-        hasTriggered = true;
-      }
-      return result;
+    return frc2::Trigger(loop, [this, timeSinceStart, triggered = false]() mutable {
+        if (!isActive) return false;
+        if (triggered) return false;
+        if (TimeIntoTraj() >= timeSinceStart) {
+            triggered = true;
+            return true;
+        }
+        return false;
     });
   }
 
@@ -197,6 +229,9 @@ class AutoTrajectory {
     timer.Restart();
     isActive = true;
     timeOffset = 0.0_s;
+    for (auto& event : scheduledEvents) {
+      event.hasTriggered = false;
+    }
     LogTrajectory(true);
   }
 
@@ -241,6 +276,16 @@ class AutoTrajectory {
         }};
   }
 
+  void CheckAndTriggerEvents() {
+    auto currentTime = TimeIntoTraj();
+    for (auto& event : scheduledEvents) {
+      if (!event.hasTriggered && isActive && currentTime >= event.triggerTime) {
+        event.hasTriggered = true;
+        event.command.Schedule();
+      }
+  }
+  }
+
   std::string name;
   Trajectory<SampleType> trajectory;
   std::function<frc::Pose2d()> poseSupplier;
@@ -250,6 +295,7 @@ class AutoTrajectory {
   std::optional<TrajectoryLogger<SampleType>> trajectoryLogger;
   frc2::Requirements drivebaseRequirements;
   frc::EventLoop* loop;
+  std::vector<ScheduledEvent> scheduledEvents;
 
   frc::Timer timer;
   bool isActive = false;

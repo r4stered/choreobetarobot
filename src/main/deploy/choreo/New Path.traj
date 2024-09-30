@@ -68,6 +68,6 @@
   "splits":[],
   "forcesAvailable":false
  },
- "events":[],
+ "events":[{"name": "MARKER 1", "t": 1.0}, {"name": "MARKER 2", "t": 2.0}],
  "pplib_commands":[]
 }

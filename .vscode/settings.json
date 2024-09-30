@@ -99,6 +99,12 @@
     "variant": "cpp",
     "xtree": "cpp",
     "*.mac": "cpp",
-    "*.inc": "cpp"
+    "*.inc": "cpp",
+    "ios": "cpp",
+    "xfacet": "cpp",
+    "xiosbase": "cpp",
+    "xlocale": "cpp",
+    "xlocinfo": "cpp",
+    "xlocnum": "cpp"
   }
 }

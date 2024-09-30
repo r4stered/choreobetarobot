@@ -20,6 +20,7 @@ void Robot::RobotInit() {
   }, {&drivetrain}));
 
   autoFactory.Bind("MARKER 1", []() { return frc2::cmd::Print("Hello from marker 1"); });
+  autoFactory.Bind("MARKER 2", []() { return frc2::cmd::Print("Hello from marker 2"); });
 }
 
 void Robot::RobotPeriodic() {
@@ -37,8 +38,12 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-  drivetrain.ResetPose(autoTraj.GetInitialPose().value(), true);
-  m_autonomousCommand.Schedule();
+  autoTraj = std::make_unique<choreo::AutoTrajectory<choreo::SwerveSample, 2024>>(autoFactory.Trajectory("New Path", loop));
+  m_autonomousCommand = loop.Cmd().AlongWith(autoTraj->Cmd());
+  drivetrain.ResetPose(autoTraj->GetInitialPose().value(), true);
+  if(m_autonomousCommand.has_value()) {
+    m_autonomousCommand->Schedule();
+  }
 } 
 
 void Robot::AutonomousPeriodic() {
@@ -47,7 +52,9 @@ void Robot::AutonomousPeriodic() {
 void Robot::AutonomousExit() {}
 
 void Robot::TeleopInit() {
-  m_autonomousCommand.Cancel();
+  if(m_autonomousCommand.has_value()) {
+    m_autonomousCommand->Cancel();
+  }
 }
 
 void Robot::TeleopPeriodic() {}
