@@ -80,12 +80,13 @@ class Trajectory {
    *
    * This function will return an empty optional if the trajectory is empty.
    *
+   * @tparam Year The field year (default: the current year).
    * @param timestamp The timestamp of this sample relative to the beginning of
    * the trajectory.
    * @param mirrorForRedAlliance whether or not to return the sample mirrored.
    * @return The SampleType at the given time.
    */
-  template <int Year>
+  template <int Year = util::kDefaultYear>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) const {
     std::optional<SampleType> state{};
@@ -109,12 +110,11 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
-   * @param Year used to calculate proper mirrored pose based on field mirrored
-   * type
+   * @tparam Year The field year (default: the current year).
    * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
    * @return The first Pose in the trajectory.
    */
-  template <int Year>
+  template <int Year = util::kDefaultYear>
   std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) const {
     if (samples.size() == 0) {
       return {};
@@ -130,12 +130,11 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
-   * @param Year used to calculate proper mirrored pose based on field mirrored
-   * type
+   * @tparam Year The field year (default: the current year).
    * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
    * @return The last Pose in the trajectory.
    */
-  template <int Year>
+  template <int Year = util::kDefaultYear>
   std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) const {
     if (samples.size() == 0) {
       return {};
@@ -175,11 +174,10 @@ class Trajectory {
   /**
    * Returns this trajectory, mirrored across the field midline.
    *
-   * @param Year used to calculate proper mirrored pose based on field mirrored
-   * type
+   * @tparam Year The field year (default: the current year).
    * @return this trajectory, mirrored across the field midline.
    */
-  template <int Year>
+  template <int Year = util::kDefaultYear>
   Trajectory<SampleType> Flipped() const {
     std::vector<SampleType> flippedStates;
     for (const auto& state : samples) {
@@ -246,7 +244,12 @@ class Trajectory {
         std::vector<EventMarker>(filteredEvents.begin(), filteredEvents.end())};
   }
 
-  // Equality operators for trajectories
+  /**
+   * Trajectory equality operator.
+   *
+   * @param other The other trajectory.
+   * @return True for equality.
+   */
   bool operator==(const Trajectory<SampleType>& other) const {
     if (name != other.name) {
       return false;
@@ -271,10 +274,6 @@ class Trajectory {
     }
 
     return true;
-  }
-
-  bool operator!=(const Trajectory<SampleType>& other) const {
-    return !(*this == other);
   }
 
   /// The name of the trajectory

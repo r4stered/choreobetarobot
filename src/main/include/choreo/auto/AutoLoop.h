@@ -15,11 +15,10 @@ namespace choreo {
  * A loop that represents an autonomous routine.
  *
  * This loop is used to handle autonomous trigger logic and schedule commands.
- * This loop should
- * **not** be shared across multiple autonomous routines.
+ * This loop should **not** be shared across multiple autonomous routines.
  *
- * @param SampleType the template type of trajectory sample to use
- * @param Year the field year. Used for proper mirroring of trajectories
+ * @tparam SampleType The type of samples in the trajectory.
+ * @tparam The field year (default: the current year).
  */
 template <choreo::TrajectorySample SampleType, int Year>
 class AutoLoop {
@@ -90,7 +89,9 @@ class AutoLoop {
    */
   void Reset() { isActive = false; }
 
-  /** Kills the loop and prevents it from running again. */
+  /**
+   * Kills the loop and prevents it from running again.
+   */
   void Kill() {
     frc2::CommandScheduler::GetInstance().CancelAll();
     if (isKilled) {
@@ -102,31 +103,31 @@ class AutoLoop {
   }
 
   /**
-   * Creates a frc2::CommandPtr that will poll this event loop and reset it when
-   * it is cancelled.
+   * Creates a command that will poll this event loop and reset it when it is
+   * cancelled.
    *
    * @return A command that will poll this event loop and reset it when it is
    * cancelled.
    * @see #Cmd(std::function<bool()>) A version of this method that takes a
-   * condition to finish the loop.
+   *   condition to finish the loop.
    */
   frc2::CommandPtr Cmd() {
     return frc2::cmd::Run([this] { Poll(); })
         .FinallyDo([this] { Reset(); })
         .Until([this] { return !frc::DriverStation::IsAutonomousEnabled(); })
-        .WithName("ChoreoAutoLoop");
+        .WithName("AutoLoop");
   }
 
   /**
-   * Creates a frc2::CommandPtr that will poll this event loop and reset it when
-   * it is finished or canceled.
+   * Creates a command that will poll this event loop and reset it when it is
+   * finished or canceled.
    *
    * @param finishCondition A condition that will finish the loop when it is
-   * true.
+   *   true.
    * @return A command that will poll this event loop and reset it when it is
-   * finished or canceled.
+   *   finished or canceled.
    * @see #Cmd() A version of this method that doesn't take a condition and
-   * never finishes.
+   *   never finishes.
    */
   frc2::CommandPtr Cmd(std::function<bool()> finishCondition) {
     return frc2::cmd::Run([this] { Poll(); })
@@ -135,17 +136,13 @@ class AutoLoop {
           return !frc::DriverStation::IsAutonomousEnabled() ||
                  finishCondition();
         })
-        .WithName("ChoreoAutoLoop");
+        .WithName("AutoLoop");
   }
 
  private:
-  /// The underlying EventLoop that triggers are bound to and polled
   frc::EventLoop loop;
-  /// The name of the auto routine this loop is associated with
   std::string name;
-  /// A boolean utalized in Enabled() to resolve trueness
   bool isActive = false;
-  /// A boolean that is true when the loop is killed
   bool isKilled = false;
 };
 

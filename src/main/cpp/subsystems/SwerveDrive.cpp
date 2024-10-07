@@ -34,6 +34,7 @@ void SwerveDrive::Drive(units::meters_per_second_t vx,
 
 void SwerveDrive::SetChassisSpeeds(const frc::ChassisSpeeds& newChassisSpeeds,
                                    bool openLoop, bool steerInPlace) {
+  fmt::print("vx: {} vy: {} omega: {}\n", newChassisSpeeds.vx, newChassisSpeeds.vy, newChassisSpeeds.omega);
   SetModuleStates(kinematics.ToSwerveModuleStates(newChassisSpeeds), true,
                   steerInPlace);
   this->targetChassisSpeeds = newChassisSpeeds;

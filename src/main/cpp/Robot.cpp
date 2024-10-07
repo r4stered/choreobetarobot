@@ -21,8 +21,8 @@ void Robot::RobotInit() {
 
   rotationController.EnableContinuousInput(-std::numbers::pi, std::numbers::pi);
 
-  autoFactory.Bind("MARKER 1", []() { return frc2::cmd::Print("Hello from marker 1"); });
-  autoFactory.Bind("MARKER 2", []() { return frc2::cmd::Print("Hello from marker 2"); });
+  autoFactory.Bind("MARKERONE", []() { return frc2::cmd::Print("Hello from marker 1"); });
+  autoFactory.Bind("MARKERTWO", []() { return frc2::cmd::Print("Hello from marker 2"); });
 }
 
 void Robot::RobotPeriodic() {

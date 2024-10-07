@@ -13,6 +13,7 @@
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
+#include "choreo/SpecVersion.h"
 #include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/Trajectory.h"
 
@@ -63,8 +64,14 @@ class Choreo {
                         "Could not open choreo project file");
       }
 
+      wpi::json json = wpi::json::parse(fileBuffer->GetCharBuffer());
+      std::string version = json["version"];
+      if (kSpecVersion != version) {
+        throw fmt::format(".chor project file: Wrong version {}. Expected {}",
+                          version, kSpecVersion);
+      }
       choreo::ProjectFile resultProjectFile;
-      choreo::from_json(fileBuffer->GetCharBuffer(), resultProjectFile);
+      choreo::from_json(json, resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error&) {
       FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
@@ -78,11 +85,11 @@ class Choreo {
    * Load a trajectory from the deploy directory. Choreolib expects .traj files
    * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
    *
-   * @param <SampleType> The type of samples in the trajectory.
-   * @param trajectoryName the path name in Choreo, which matches the file name
-   * in the deploy directory, file extension is optional.
-   * @return the loaded trajectory, or `empty std::optional` if the trajectory
-   * could not be loaded.
+   * @tparam SampleType The type of samples in the trajectory.
+   * @param trajectoryName The path name in Choreo, which matches the file name
+   *   in the deploy directory, file extension is optional.
+   * @return The loaded trajectory, or `empty std::optional` if the trajectory
+   *   could not be loaded.
    */
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
@@ -105,7 +112,8 @@ class Choreo {
 
     try {
       return LoadTrajectoryString<SampleType>(
-          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()});
+          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()},
+          trajectoryName);
     } catch (wpi::json::parse_error& ex) {
       FRC_ReportError(frc::warn::Warning, "Could not parse trajectory file: {}",
                       trajectoryName);
@@ -115,16 +123,29 @@ class Choreo {
     return {};
   }
 
+  /**
+   * Load a trajectory from a string.
+   *
+   * @tparam SampleType The type of samples in the trajectory.
+   * @param trajectoryJsonString The JSON string.
+   * @param trajectoryName The path name in Choreo, which matches the file name
+   *   in the deploy directory, file extension is optional.
+   * @return The loaded trajectory, or `empty std::optional` if the trajectory
+   *   could not be loaded.
+   */
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
-      std::string_view trajectoryJsonString) {
+      std::string_view trajectoryJsonString, std::string_view trajectoryName) {
     wpi::json json = wpi::json::parse(trajectoryJsonString);
+    std::string version = json["version"];
+    if (kSpecVersion != version) {
+      throw fmt::format("{}.traj: Wrong version {}. Expected {}",
+                        trajectoryName, version, kSpecVersion);
+    }
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);
     return trajectory;
   }
-
-  static std::string_view GetChoreoDir() { return CHOREO_DIR; }
 
  private:
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
@@ -136,81 +157,4 @@ class Choreo {
 
   Choreo();
 };
-
-/**
- * A utility for caching loaded trajectories. This allows for loading
- * trajectories only once, and then reusing them.
- */
-template <choreo::TrajectorySample SampleType>
-class ChoreoTrajectoryCache {
- public:
-  /**
-   * Load a trajectory from the deploy directory. Choreolib expects .traj files
-   * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
-   *
-   * This method will cache the loaded trajectory and reused it if it is
-   * requested again.
-   *
-   * @param trajectoryName the path name in Choreo, which matches the file name
-   * in the deploy directory, file extension is optional.
-   * @return the loaded trajectory, or `empty std::optional` if the trajectory
-   * could not be loaded.
-   * @see Choreo#LoadTrajectory(std::string_view)
-   */
-  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      std::string_view trajectoryName) {
-    if (cache.contains(trajectoryName)) {
-      return cache[trajectoryName];
-    } else {
-      cache[trajectoryName] =
-          Choreo::LoadTrajectory<SampleType>(trajectoryName);
-      return cache[trajectoryName];
-    }
-  }
-
-  /**
-   * Load a section of a split trajectory from the deploy directory. Choreolib
-   * expects .traj files to be placed in
-   * src/main/deploy/choreo/[trajectoryName].traj.
-   *
-   * This method will cache the loaded trajectory and reused it if it is
-   * requested again. The trajectory that is split off of will also be cached.
-   *
-   * @param trajectoryName the path name in Choreo, which matches the file name
-   * in the deploy directory, file extension is optional.
-   * @param splitIndex the index of the split trajectory to load
-   * @return the loaded trajectory, or `empty std::optional` if the trajectory
-   * could not be loaded.
-   * @see Choreo#LoadTrajectory(std::string_view)
-   */
-  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      std::string_view trajectoryName, int splitIndex) {
-    std::string key = fmt::format("{}.:.{}", trajectoryName, splitIndex);
-
-    if (!cache.contains(key)) {
-      if (cache.contains(trajectoryName)) {
-        cache[key] = cache[trajectoryName].GetSplit(splitIndex);
-      } else {
-        auto possibleTrajectory = LoadTrajectory(trajectoryName);
-        cache[trajectoryName] = possibleTrajectory;
-
-        if (possibleTrajectory.has_value()) {
-          cache[key] = possibleTrajectory.value().GetSplit(splitIndex);
-        }
-      }
-    }
-
-    return cache[key];
-  }
-
-  /**
-   * Clears the trajectory cache.
-   */
-  static void Clear() { cache.clear(); }
-
- private:
-  static inline std::unordered_map<std::string, choreo::Trajectory<SampleType>>
-      cache;
-};
-
 }  // namespace choreo

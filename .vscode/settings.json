@@ -105,6 +105,12 @@
     "xiosbase": "cpp",
     "xlocale": "cpp",
     "xlocinfo": "cpp",
-    "xlocnum": "cpp"
+    "xlocnum": "cpp",
+    "format": "cpp",
+    "locale": "cpp",
+    "xlocbuf": "cpp",
+    "xlocmes": "cpp",
+    "xlocmon": "cpp",
+    "xloctime": "cpp"
   }
 }

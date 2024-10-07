@@ -16,7 +16,12 @@ static constexpr units::meter_t fieldWidth = 8.19912_m;
 
 enum class FlipperType { Mirrored, RotateAround };
 
+/**
+ * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading
+ * becomes pi - heading.
+ */
 struct MirroredFlipper {
+  /// Whether pose should be mirrored.
   static constexpr bool isMirrored = true;
 
   /**
@@ -48,7 +53,12 @@ struct MirroredFlipper {
   }
 };
 
+/**
+ * X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes pi -
+ * heading.
+ */
 struct RotateAroundFlipper {
+  /// Whether pose should be mirrored.
   static constexpr bool isMirrored = false;
 
   /**
@@ -82,20 +92,24 @@ struct RotateAroundFlipper {
   }
 };
 
-constexpr Map flipperMap{std::array{
+inline constexpr Map flipperMap{std::array{
     std::pair{2022, FlipperType::RotateAround},
     std::pair{2023, FlipperType::Mirrored},
     std::pair{2024, FlipperType::Mirrored},
 }};
 
+inline constexpr int kDefaultYear = 2024;
+
 /**
  * A utility to standardize flipping of coordinate data based on the current
  * alliance across different years.
  *
- * <p>Grabs the instance of the flipper for the supplied template parameter
- * Will not compile if an invalid year is supplied
+ * Grabs the instance of the flipper for the supplied template parameter. Will
+ * not compile if an invalid year is supplied.
+ *
+ * @tparam Year The field year (default: the current year).
  */
-template <int Year>
+template <int Year = kDefaultYear>
 constexpr auto GetFlipperForYear() {
   constexpr bool yearInMap = [] {
     try {

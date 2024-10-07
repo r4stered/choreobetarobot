@@ -48,7 +48,7 @@ class Robot : public frc::TimedRobot {
       units::meters_per_second_t xFF = currentSample.vx;
       units::meters_per_second_t yFF = currentSample.vy;
       units::radians_per_second_t rotationFF = currentSample.omega;
-
+      
       units::meters_per_second_t xFeedback{
           xController.Calculate(refPose.X().value(), currentSample.x.value())};
       units::meters_per_second_t yFeedback{
@@ -56,11 +56,9 @@ class Robot : public frc::TimedRobot {
       units::radians_per_second_t rotationFeedback{rotationController.Calculate(
           refPose.Rotation().Radians().value(), currentSample.heading.value())};
 
-      return frc::ChassisSpeeds::FromFieldRelativeSpeeds(
+      auto speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
           xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback,
           refPose.Rotation());
-    },
-    [this](frc::ChassisSpeeds speeds) {
       drivetrain.SetChassisSpeeds(speeds, false, false);
     },
     [] {
