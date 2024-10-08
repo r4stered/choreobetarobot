@@ -37,7 +37,7 @@ class AutoLoop {
    * inner loop
    *
    * @param name The name of the loop
-   * @param loop The inner {@link EventLoop}
+   * @param loop The inner EventLoop
    */
   AutoLoop(std::string_view name, frc::EventLoop&& loop)
       : loop{std::move(loop)}, name{name} {}
@@ -45,7 +45,19 @@ class AutoLoop {
   AutoLoop(const AutoLoop&) = delete;
   AutoLoop& operator=(const AutoLoop&) = delete;
 
+  /**
+   * The default move constructor
+   *
+   * @param other the AutoLoop to move into the instance
+   */
   AutoLoop(AutoLoop&& other) noexcept = default;
+
+  /**
+   * The default move assignment operator
+   *
+   * @param other the AutoLoop to move into the instance
+   * @return the moved AutoLoop
+   */
   AutoLoop& operator=(AutoLoop&& other) noexcept = default;
 
   /**

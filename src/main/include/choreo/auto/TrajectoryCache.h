@@ -1,4 +1,9 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
+
+#include <string>
+#include <unordered_map>
 
 #include "choreo/trajectory/TrajectorySample.h"
 
@@ -75,7 +80,8 @@ class TrajectoryCache {
   static void Clear() { cache.clear(); }
 
  private:
-  static inline std::unordered_map<std::string, std::optional<choreo::Trajectory<SampleType>>>
+  static inline std::unordered_map<
+      std::string, std::optional<choreo::Trajectory<SampleType>>>
       cache;
 };
-}
+}  // namespace choreo

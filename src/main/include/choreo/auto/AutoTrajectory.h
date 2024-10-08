@@ -3,6 +3,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -23,18 +24,31 @@
 
 namespace choreo {
 
-template <choreo::TrajectorySample SampleType>
-using ChoreoControllerFunction = std::function<void(frc::Pose2d, SampleType)>;
-
-template <choreo::TrajectorySample SampleType>
-using TrajectoryLogger = std::function<void(Trajectory<SampleType>, bool)>;
+using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
 
+/**
+ * A struct to hold CommandsPtrs and keep track if they were triggered along the
+ * path
+ *
+ */
 struct ScheduledEvent {
+  /**
+   * The time through the path the command is supposed to be triggered
+   */
   units::second_t triggerTime;
+  /**
+   * The name of the event marker
+   */
   std::string name;
+  /**
+   * The CommandPtr to run
+   */
   frc2::CommandPtr command;
+  /**
+   * If the event has been triggered yet
+   */
   bool hasTriggered = false;
 };
 
@@ -53,7 +67,16 @@ class AutoTrajectory {
   AutoTrajectory(const AutoTrajectory&) = delete;
   AutoTrajectory& operator=(const AutoTrajectory&) = delete;
 
+  /**
+   * The move constructor for an auto trajectory
+   */
   AutoTrajectory(AutoTrajectory&&) = default;
+
+  /**
+   * The move assignment operator for an auto trajectory
+   *
+   * @return the moved trajectory
+   */
   AutoTrajectory& operator=(AutoTrajectory&&) = default;
 
   /**
@@ -66,16 +89,18 @@ class AutoTrajectory {
    * @param mirrorTrajectory Getter that determines whether to mirror
    *   trajectory.
    * @param trajectoryLogger Optional trajectory logger.
-   * @param driveSubsystem Drive subsystem.
+   * @param drivebaseRequirements Requirements for the drivebase subsystem
    * @param loop Event loop.
+   * @param autoBindings A shared pointer to mapped choreolib markers to
+   * CommandPtr factories
    */
   AutoTrajectory(std::string_view name,
                  const choreo::Trajectory<SampleType>& trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
-                 ChoreoControllerFunction<SampleType> controller,
+                 std::function<void(frc::Pose2d, SampleType)> controller,
                  std::function<bool()> mirrorTrajectory,
                  std::optional<TrajectoryLogger<SampleType>> trajectoryLogger,
-                 frc2::Requirements drivebaseRequirements, frc::EventLoop* loop, 
+                 frc2::Requirements drivebaseRequirements, frc::EventLoop* loop,
                  std::shared_ptr<AutoBindings> autoBindings)
       : name{name},
         trajectory{trajectory},
@@ -100,17 +125,16 @@ class AutoTrajectory {
   frc2::CommandPtr Cmd() {
     if (trajectory.samples.size() == 0) {
       return frc2::cmd::RunOnce([this] {
-               FRC_ReportError(
-                   frc::warn::Warning,
-                   "Trajectory {} has no samples", name);
+               FRC_ReportError(frc::warn::Warning,
+                               "Trajectory {} has no samples", name);
              })
           .WithName("Trajectory_" + name);
     }
     return frc2::FunctionalCommand(
                [this] { return CmdInitialize(); },
                [this] {
-                  CmdExecute();
-                  CheckAndTriggerEvents();
+                 CmdExecute();
+                 CheckAndTriggerEvents();
                },
                [this](bool interrupted) { return CmdEnd(interrupted); },
                [this] { return CmdIsFinished(); }, drivebaseRequirements)
@@ -382,7 +406,7 @@ class AutoTrajectory {
   std::string name;
   choreo::Trajectory<SampleType> trajectory;
   std::function<frc::Pose2d()> poseSupplier;
-  ChoreoControllerFunction<SampleType> controller;
+  std::function<void(frc::Pose2d, SampleType)> controller;
   std::function<bool()> mirrorTrajectory;
   std::optional<TrajectoryLogger<SampleType>> trajectoryLogger;
   frc2::Requirements drivebaseRequirements;
