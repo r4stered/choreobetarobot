@@ -16,6 +16,7 @@
 #include <frc/controller/PIDController.h>
 #include "choreo/auto/AutoFactory.h"
 #include "choreo/auto/AutoChooser.h"
+#include "Autos.h"
 
 class Robot : public frc::TimedRobot {
  public:
@@ -80,16 +81,12 @@ class Robot : public frc::TimedRobot {
               ->SetPoses(trajectory.GetPoses());
         }
       }};
-  choreo::AutoLoop<choreo::SwerveSample> loop =
-      autoFactory.NewLoop("Auto Loop");
-  choreo::AutoTrajectory<choreo::SwerveSample> autoTraj1;
-  choreo::AutoTrajectory<choreo::SwerveSample> autoTraj2;
-  choreo::AutoTrajectory<choreo::SwerveSample> autoTraj3;
+
+  AutoRoutines routines{drivetrain, autoFactory};
 
   choreo::AutoChooser<choreo::SwerveSample> chooser{autoFactory,
                                                     "DREWSCHOOSER"};
 
   std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Field2d debugField;
-  frc2::Trigger test;
 };

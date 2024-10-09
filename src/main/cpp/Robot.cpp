@@ -10,6 +10,7 @@
 #include <frc/simulation/RoboRioSim.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/MathUtil.h>
+#include "frc2/command/Commands.h"
 
 void Robot::RobotInit() {
   drivetrain.SetDefaultCommand(frc2::cmd::Run(
@@ -26,20 +27,8 @@ void Robot::RobotInit() {
 
   rotationController.EnableContinuousInput(-std::numbers::pi, std::numbers::pi);
 
-  autoFactory.Bind("test",
-                   []() { return frc2::cmd::Print("Hello from marker 1"); });
-  autoFactory.Bind("MARKERTWO",
-                   []() { return frc2::cmd::Print("Hello from marker 2"); });
-
-  autoTraj1 = choreo::AutoTrajectory<choreo::SwerveSample>(
-      autoFactory.Trajectory("Straight", loop));
-  chooser.AddAutoRoutine(
-      "ONLY STRAIGHT",
-      [this](choreo::AutoFactory<choreo::SwerveSample>& factory) {
-        return autoTraj1.Cmd().BeforeStarting([this] {
-          drivetrain.ResetPose(autoTraj1.GetInitialPose().value(), true);
-        });
-      });
+  chooser.AddAutoRoutine("ONLY STRAIGHT",
+                         [this]() { return routines.TestAuto(); });
 
   chooser.Choose("ONLY STRAIGHT");
 }
@@ -60,20 +49,6 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-  // autoTraj2 =
-  // choreo::AutoTrajectory<choreo::SwerveSample>(autoFactory.Trajectory("Straight",
-  // loop)); autoTraj3 =
-  // choreo::AutoTrajectory<choreo::SwerveSample>(autoFactory.Trajectory("RedTest",
-  // loop));
-
-  // test = autoTraj2.AtTime(2.5_s);
-  // m_autonomousCommand = loop.Cmd().AlongWith(
-  //   frc2::cmd::Sequence(autoTraj2.Cmd())
-  // );
-  // drivetrain.ResetPose(autoTraj2.GetInitialPose().value(), true);
-  // m_autonomousCommand = loop.Cmd().AlongWith(autoTraj3.Cmd());
-  // drivetrain.ResetPose(autoTraj3.GetInitialPose().value(), true);
-
   m_autonomousCommand = chooser.GetSelectedAutoRoutine();
 
   if (m_autonomousCommand.has_value()) {
@@ -81,11 +56,7 @@ void Robot::AutonomousInit() {
   }
 }
 
-void Robot::AutonomousPeriodic() {
-  if (test.Get()) {
-    fmt::print("Hello from test marker!\n");
-  }
-}
+void Robot::AutonomousPeriodic() {}
 
 void Robot::AutonomousExit() {}
 
