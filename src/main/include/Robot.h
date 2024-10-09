@@ -15,6 +15,7 @@
 #include <frc2/command/button/CommandXboxController.h>
 #include <frc/controller/PIDController.h>
 #include "choreo/auto/AutoFactory.h"
+#include "choreo/auto/AutoChooser.h"
 
 class Robot : public frc::TimedRobot {
  public:
@@ -84,6 +85,8 @@ class Robot : public frc::TimedRobot {
   choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj1;
   choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj2;
   choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj3;
+
+  choreo::AutoChooser<choreo::SwerveSample, 2024> chooser{autoFactory, "DREWSCHOOSER"};
 
 
   std::optional<frc2::CommandPtr> m_autonomousCommand;

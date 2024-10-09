@@ -10,6 +10,7 @@
   },
   "NTProvider": {
     "types": {
+      "/DREWSCHOOSER/AutoChooser": "String Chooser",
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/FRC Field": "Field2d"
     },
@@ -39,6 +40,15 @@
   },
   "NetworkTables": {
     "transitory": {
+      "DREWSCHOOSER": {
+        "AutoChooser": {
+          "open": true,
+          "string[]##v_/DREWSCHOOSER/AutoChooser/options": {
+            "open": true
+          }
+        },
+        "open": true
+      },
       "FMSInfo": {
         "open": true
       },

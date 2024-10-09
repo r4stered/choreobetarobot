@@ -21,14 +21,22 @@ void Robot::RobotInit() {
 
   rotationController.EnableContinuousInput(-std::numbers::pi, std::numbers::pi);
 
-  autoFactory.Bind("MARKERONE", []() { return frc2::cmd::Print("Hello from marker 1"); });
+  autoFactory.Bind("test", []() { return frc2::cmd::Print("Hello from marker 1"); });
   autoFactory.Bind("MARKERTWO", []() { return frc2::cmd::Print("Hello from marker 2"); });
+
+  autoTraj1 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("Straight", loop));
+  chooser.AddAutoRoutine("ONLY STRAIGHT", [this](choreo::AutoFactory<choreo::SwerveSample, 2024>& factory) {
+    return autoTraj1.Cmd().BeforeStarting([this] { drivetrain.ResetPose(autoTraj1.GetInitialPose().value(), true); });
+  });
+
+  chooser.Choose("ONLY STRAIGHT");
 }
 
 void Robot::RobotPeriodic() {
   drivetrain.Log();
   frc2::CommandScheduler::GetInstance().Run();
   frc::SmartDashboard::PutData("FRC Field", &debugField);
+  chooser.Update();
 }
 
 void Robot::DisabledInit() {}
@@ -40,17 +48,19 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-  autoTraj1 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("New Path", loop));
-  autoTraj2 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("Straight", loop));
-  autoTraj3 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("RedTest", loop));
+  // autoTraj2 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("Straight", loop));
+  // autoTraj3 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("RedTest", loop));
 
-  test = autoTraj1.AtTime(2.5_s);
-  m_autonomousCommand = loop.Cmd().AlongWith(
-    frc2::cmd::Sequence(autoTraj1.Cmd(), autoTraj2.Cmd())
-  );
-  drivetrain.ResetPose(autoTraj1.GetInitialPose().value(), true);
+  // test = autoTraj2.AtTime(2.5_s);
+  // m_autonomousCommand = loop.Cmd().AlongWith(
+  //   frc2::cmd::Sequence(autoTraj2.Cmd())
+  // );
+  // drivetrain.ResetPose(autoTraj2.GetInitialPose().value(), true);
   //m_autonomousCommand = loop.Cmd().AlongWith(autoTraj3.Cmd());
   //drivetrain.ResetPose(autoTraj3.GetInitialPose().value(), true);
+
+  m_autonomousCommand = chooser.GetSelectedAutoRoutine();
+
   if(m_autonomousCommand.has_value()) {
     m_autonomousCommand->Schedule();
   }

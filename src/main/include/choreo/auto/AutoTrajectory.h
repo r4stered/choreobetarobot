@@ -24,7 +24,8 @@
 
 namespace choreo {
 
-using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
+template <choreo::TrajectorySample SampleType>
+using TrajectoryLogger = std::function<void(Trajectory<SampleType>, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
 
