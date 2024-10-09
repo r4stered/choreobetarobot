@@ -12,22 +12,34 @@
 #include <frc/MathUtil.h>
 
 void Robot::RobotInit() {
-  drivetrain.SetDefaultCommand(frc2::cmd::Run([this] {
-    auto forward = -1.0 * frc::ApplyDeadband(controller.GetLeftY(), 0.1) * constants::Swerve::kMaxLinearSpeed;
-    auto strafe = -1.0 * frc::ApplyDeadband(controller.GetLeftX(), 0.1) * constants::Swerve::kMaxLinearSpeed;
-    auto turn = -1.0 * frc::ApplyDeadband(controller.GetRightX(), 0.1) * constants::Swerve::kMaxAngularSpeed;
-    drivetrain.Drive(forward, strafe, turn);
-  }, {&drivetrain}));
+  drivetrain.SetDefaultCommand(frc2::cmd::Run(
+      [this] {
+        auto forward = -1.0 * frc::ApplyDeadband(controller.GetLeftY(), 0.1) *
+                       constants::Swerve::kMaxLinearSpeed;
+        auto strafe = -1.0 * frc::ApplyDeadband(controller.GetLeftX(), 0.1) *
+                      constants::Swerve::kMaxLinearSpeed;
+        auto turn = -1.0 * frc::ApplyDeadband(controller.GetRightX(), 0.1) *
+                    constants::Swerve::kMaxAngularSpeed;
+        drivetrain.Drive(forward, strafe, turn);
+      },
+      {&drivetrain}));
 
   rotationController.EnableContinuousInput(-std::numbers::pi, std::numbers::pi);
 
-  autoFactory.Bind("test", []() { return frc2::cmd::Print("Hello from marker 1"); });
-  autoFactory.Bind("MARKERTWO", []() { return frc2::cmd::Print("Hello from marker 2"); });
+  autoFactory.Bind("test",
+                   []() { return frc2::cmd::Print("Hello from marker 1"); });
+  autoFactory.Bind("MARKERTWO",
+                   []() { return frc2::cmd::Print("Hello from marker 2"); });
 
-  autoTraj1 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("Straight", loop));
-  chooser.AddAutoRoutine("ONLY STRAIGHT", [this](choreo::AutoFactory<choreo::SwerveSample, 2024>& factory) {
-    return autoTraj1.Cmd().BeforeStarting([this] { drivetrain.ResetPose(autoTraj1.GetInitialPose().value(), true); });
-  });
+  autoTraj1 = choreo::AutoTrajectory<choreo::SwerveSample>(
+      autoFactory.Trajectory("Straight", loop));
+  chooser.AddAutoRoutine(
+      "ONLY STRAIGHT",
+      [this](choreo::AutoFactory<choreo::SwerveSample>& factory) {
+        return autoTraj1.Cmd().BeforeStarting([this] {
+          drivetrain.ResetPose(autoTraj1.GetInitialPose().value(), true);
+        });
+      });
 
   chooser.Choose("ONLY STRAIGHT");
 }
@@ -48,26 +60,29 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-  // autoTraj2 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("Straight", loop));
-  // autoTraj3 = choreo::AutoTrajectory<choreo::SwerveSample, 2024>(autoFactory.Trajectory("RedTest", loop));
+  // autoTraj2 =
+  // choreo::AutoTrajectory<choreo::SwerveSample>(autoFactory.Trajectory("Straight",
+  // loop)); autoTraj3 =
+  // choreo::AutoTrajectory<choreo::SwerveSample>(autoFactory.Trajectory("RedTest",
+  // loop));
 
   // test = autoTraj2.AtTime(2.5_s);
   // m_autonomousCommand = loop.Cmd().AlongWith(
   //   frc2::cmd::Sequence(autoTraj2.Cmd())
   // );
   // drivetrain.ResetPose(autoTraj2.GetInitialPose().value(), true);
-  //m_autonomousCommand = loop.Cmd().AlongWith(autoTraj3.Cmd());
-  //drivetrain.ResetPose(autoTraj3.GetInitialPose().value(), true);
+  // m_autonomousCommand = loop.Cmd().AlongWith(autoTraj3.Cmd());
+  // drivetrain.ResetPose(autoTraj3.GetInitialPose().value(), true);
 
   m_autonomousCommand = chooser.GetSelectedAutoRoutine();
 
-  if(m_autonomousCommand.has_value()) {
+  if (m_autonomousCommand.has_value()) {
     m_autonomousCommand->Schedule();
   }
-} 
+}
 
 void Robot::AutonomousPeriodic() {
-  if(test.Get()) {
+  if (test.Get()) {
     fmt::print("Hello from test marker!\n");
   }
 }
@@ -75,7 +90,7 @@ void Robot::AutonomousPeriodic() {
 void Robot::AutonomousExit() {}
 
 void Robot::TeleopInit() {
-  if(m_autonomousCommand.has_value()) {
+  if (m_autonomousCommand.has_value()) {
     m_autonomousCommand->Cancel();
   }
 }
@@ -84,9 +99,7 @@ void Robot::TeleopPeriodic() {}
 
 void Robot::TeleopExit() {}
 
-
 void Robot::SimulationPeriodic() {
-
   debugField.GetObject("EstimatedRobot")->SetPose(drivetrain.GetPose());
   debugField.GetObject("EstimatedRobotModules")
       ->SetPoses(drivetrain.GetModulePoses());

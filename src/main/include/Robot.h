@@ -41,53 +41,53 @@ class Robot : public frc::TimedRobot {
   frc::PIDController xController{10, 0, 0};
   frc::PIDController yController{10, 0, 0};
   frc::PIDController rotationController{10, 0, 0};
-  choreo::AutoFactory<choreo::SwerveSample, 2024> autoFactory{
-    [this] {
-      return drivetrain.GetPose();
-    },
-    [this](frc::Pose2d refPose, choreo::SwerveSample currentSample) {
-      units::meters_per_second_t xFF = currentSample.vx;
-      units::meters_per_second_t yFF = currentSample.vy;
-      units::radians_per_second_t rotationFF = currentSample.omega;
-      
-      units::meters_per_second_t xFeedback{
-          xController.Calculate(refPose.X().value(), currentSample.x.value())};
-      units::meters_per_second_t yFeedback{
-          yController.Calculate(refPose.Y().value(), currentSample.y.value())};
-      units::radians_per_second_t rotationFeedback{rotationController.Calculate(
-          refPose.Rotation().Radians().value(), currentSample.heading.value())};
+  choreo::AutoFactory<choreo::SwerveSample> autoFactory{
+      [this] { return drivetrain.GetPose(); },
+      [this](frc::Pose2d refPose, choreo::SwerveSample currentSample) {
+        units::meters_per_second_t xFF = currentSample.vx;
+        units::meters_per_second_t yFF = currentSample.vy;
+        units::radians_per_second_t rotationFF = currentSample.omega;
 
-      auto speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-          xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback,
-          refPose.Rotation());
-      drivetrain.SetChassisSpeeds(speeds, false, false);
-    },
-    [] {
-      auto ally = frc::DriverStation::GetAlliance();
-      if(ally.has_value()) {
-        if(ally == frc::DriverStation::Alliance::kRed) {
-          return true;
+        units::meters_per_second_t xFeedback{xController.Calculate(
+            refPose.X().value(), currentSample.x.value())};
+        units::meters_per_second_t yFeedback{yController.Calculate(
+            refPose.Y().value(), currentSample.y.value())};
+        units::radians_per_second_t rotationFeedback{
+            rotationController.Calculate(refPose.Rotation().Radians().value(),
+                                         currentSample.heading.value())};
+
+        auto speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
+            xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback,
+            refPose.Rotation());
+        drivetrain.SetChassisSpeeds(speeds, false, false);
+      },
+      [] {
+        auto ally = frc::DriverStation::GetAlliance();
+        if (ally.has_value()) {
+          if (ally == frc::DriverStation::Alliance::kRed) {
+            return true;
+          }
         }
-      }
-      return false;
-    },
-    {&drivetrain},
-    [this](choreo::Trajectory<choreo::SwerveSample> trajectory, bool starting) {
-      if(!starting) {
-        debugField.GetObject("Choreo Trajectory")->SetPoses({});
-      }
-      else {
-        debugField.GetObject("Choreo Trajectory")->SetPoses(trajectory.GetPoses());
-      }
-    }
-  };
-  choreo::AutoLoop<choreo::SwerveSample, 2024> loop = autoFactory.NewLoop("Auto Loop");
-  choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj1;
-  choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj2;
-  choreo::AutoTrajectory<choreo::SwerveSample, 2024> autoTraj3;
+        return false;
+      },
+      {&drivetrain},
+      [this](choreo::Trajectory<choreo::SwerveSample> trajectory,
+             bool starting) {
+        if (!starting) {
+          debugField.GetObject("Choreo Trajectory")->SetPoses({});
+        } else {
+          debugField.GetObject("Choreo Trajectory")
+              ->SetPoses(trajectory.GetPoses());
+        }
+      }};
+  choreo::AutoLoop<choreo::SwerveSample> loop =
+      autoFactory.NewLoop("Auto Loop");
+  choreo::AutoTrajectory<choreo::SwerveSample> autoTraj1;
+  choreo::AutoTrajectory<choreo::SwerveSample> autoTraj2;
+  choreo::AutoTrajectory<choreo::SwerveSample> autoTraj3;
 
-  choreo::AutoChooser<choreo::SwerveSample, 2024> chooser{autoFactory, "DREWSCHOOSER"};
-
+  choreo::AutoChooser<choreo::SwerveSample> chooser{autoFactory,
+                                                    "DREWSCHOOSER"};
 
   std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Field2d debugField;

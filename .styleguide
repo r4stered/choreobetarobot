@@ -1,0 +1,24 @@
+cppHeaderFileInclude {
+  \.h$
+  \.hpp$
+}
+
+cppSrcFileInclude {
+  \.cpp$
+}
+
+modifiableFileExclude {
+  \.gif$
+  \.icns$
+  \.ico$
+  \.png$
+}
+
+includeOtherLibs {
+  ^fmt/
+  ^frc/
+  ^frc2/
+  ^gtest/
+  ^units/
+  ^wpi/
+}

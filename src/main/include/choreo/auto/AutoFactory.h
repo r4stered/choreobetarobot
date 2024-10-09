@@ -3,17 +3,15 @@
 #pragma once
 
 #include <functional>
-#include <memory>
-#include <string>
 #include <string_view>
-#include <unordered_map>
 #include <utility>
 
 #include <frc/RobotBase.h>
 
-#include "choreo/Choreo.h"
 #include "choreo/auto/AutoLoop.h"
+#include "choreo/auto/AutoTrajectory.h"
 #include "choreo/auto/TrajectoryCache.h"
+#include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
 /**
@@ -59,7 +57,7 @@ namespace choreo {
  * @tparam SampleType The type of samples in the trajectory.
  * @tparam Year The field year.
  */
-template <choreo::TrajectorySample SampleType, int Year>
+template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoFactory {
  public:
   /**
