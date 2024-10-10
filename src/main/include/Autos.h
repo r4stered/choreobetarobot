@@ -14,11 +14,14 @@ class AutoRoutines {
                         choreo::AutoFactory<choreo::SwerveSample>& factory)
       : swerveSub{swerveSub},
         factory{factory},
-        loop{factory.NewLoop("Auto Routine Loops")},
-        straightTraj{factory.Trajectory("Straight", loop)} {}
+        loop{factory.NewLoop("Auto Routine Loops")} {}
 
   frc2::CommandPtr TestAuto() {
-    factory.Bind("test", [this] { return frc2::cmd::Print("Hello from test marker"); });
+    factory.Bind("test", [this] {
+      fmt::print("Hello from bind lambda!\n");
+      return frc2::cmd::RunOnce([] { double test = 1 + 1; }); 
+    });
+    straightTraj = factory.Trajectory("Straight", loop);
     loop.Enabled().OnTrue(frc2::cmd::RunOnce([this] {
                             swerveSub.ResetPose(
                                 straightTraj.GetInitialPose().value(), true);

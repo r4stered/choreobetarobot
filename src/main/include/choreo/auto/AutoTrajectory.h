@@ -22,6 +22,7 @@
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
+#include "frc2/command/CommandScheduler.h"
 
 namespace choreo {
 
@@ -47,7 +48,7 @@ struct ScheduledEvent {
   /**
    * The CommandPtr to run
    */
-  frc2::CommandPtr command;
+  std::function<frc2::CommandPtr()> commandFactory;
   /**
    * If the event has been triggered yet
    */
@@ -114,7 +115,7 @@ class AutoTrajectory {
         loop(loop),
         offTrigger(loop, [] { return false; }) {
     for (const auto& [key, cmdFactory] : autoBindings->GetBindings()) {
-      AddScheduledEvent(key, cmdFactory());
+      AddScheduledEvent(key, cmdFactory);
     }
   }
 
@@ -390,10 +391,10 @@ class AutoTrajectory {
         }};
   }
 
-  void AddScheduledEvent(std::string_view eventName, frc2::CommandPtr cmd) {
+  void AddScheduledEvent(std::string_view eventName, std::function<frc2::CommandPtr()> cmdFactory) {
     for (const auto& event : trajectory.GetEvents(eventName)) {
       scheduledEvents.push_back(
-          {event.timestamp, std::string(eventName), std::move(cmd), false});
+          {event.timestamp, std::string(eventName), cmdFactory, false});
     }
   }
 
@@ -402,9 +403,21 @@ class AutoTrajectory {
     for (auto& event : scheduledEvents) {
       if (!event.hasTriggered && isActive && currentTime >= event.triggerTime) {
         event.hasTriggered = true;
-        event.command.Schedule();
+        fmt::print("Triggering event: {}\n", event.name);
+        try {
+          auto cmd = event.commandFactory();
+          fmt::print("Command created successfully\n");
+          frc2::CommandScheduler::GetInstance().Schedule(std::move(cmd));
+          fmt::print("Command scheduled successfully\n");
+          fmt::print("Event triggering complete\n");
+        } catch (const std::exception& e) {
+          fmt::print("Exception when handling command: {}\n", e.what());
+        } catch (...) {
+          fmt::print("Unknown exception when handling command\n");
+        }
       }
     }
+    fmt::print("CheckAndTriggerEvents complete\n");
   }
 
   std::string name;

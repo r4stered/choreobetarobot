@@ -35,7 +35,14 @@ void Robot::RobotInit() {
 
 void Robot::RobotPeriodic() {
   drivetrain.Log();
-  frc2::CommandScheduler::GetInstance().Run();
+  try {
+    // Your existing code here
+    frc2::CommandScheduler::GetInstance().Run();
+  } catch (const std::exception& e) {
+    fmt::print("Caught exception in AutonomousPeriodic: {}\n", e.what());
+  } catch (...) {
+    fmt::print("Caught unknown exception in AutonomousPeriodic\n");
+  }
   frc::SmartDashboard::PutData("FRC Field", &debugField);
   chooser.Update();
 }
