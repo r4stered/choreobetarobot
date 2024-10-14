@@ -81,11 +81,9 @@ class Robot : public frc::TimedRobot {
               ->SetPoses(trajectory.GetPoses());
         }
       }};
-
-  AutoRoutines routines{drivetrain, autoFactory};
-
-  choreo::AutoChooser<choreo::SwerveSample> chooser{autoFactory,
-                                                    "DREWSCHOOSER"};
+    
+  choreo::AutoLoop<choreo::SwerveSample> loop{autoFactory.NewLoop("Auto Loop")};
+  choreo::AutoTrajectory<choreo::SwerveSample> straightTraj;
 
   std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Field2d debugField;

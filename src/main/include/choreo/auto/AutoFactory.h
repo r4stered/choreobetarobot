@@ -172,9 +172,9 @@ class AutoFactory {
    * @param name The name of the trajectory to bind the command to.
    * @param cmdFactory A function that retuns a CommandPtr to bind
    */
-  void Bind(std::string_view name,
+  void Bind(std::string name,
             std::function<frc2::CommandPtr()> cmdFactory) {
-    autoBindings->Bind(name, std::move(cmdFactory));
+    autoBindings->Bind(name, cmdFactory);
   }
 
   /**

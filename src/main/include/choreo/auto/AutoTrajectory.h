@@ -403,21 +403,9 @@ class AutoTrajectory {
     for (auto& event : scheduledEvents) {
       if (!event.hasTriggered && isActive && currentTime >= event.triggerTime) {
         event.hasTriggered = true;
-        fmt::print("Triggering event: {}\n", event.name);
-        try {
-          auto cmd = event.commandFactory();
-          fmt::print("Command created successfully\n");
-          frc2::CommandScheduler::GetInstance().Schedule(std::move(cmd));
-          fmt::print("Command scheduled successfully\n");
-          fmt::print("Event triggering complete\n");
-        } catch (const std::exception& e) {
-          fmt::print("Exception when handling command: {}\n", e.what());
-        } catch (...) {
-          fmt::print("Unknown exception when handling command\n");
-        }
+        frc2::CommandScheduler::GetInstance().Schedule(event.commandFactory());
       }
     }
-    fmt::print("CheckAndTriggerEvents complete\n");
   }
 
   std::string name;

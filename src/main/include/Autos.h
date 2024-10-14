@@ -17,17 +17,7 @@ class AutoRoutines {
         loop{factory.NewLoop("Auto Routine Loops")} {}
 
   frc2::CommandPtr TestAuto() {
-    factory.Bind("test", [this] {
-      fmt::print("Hello from bind lambda!\n");
-      return frc2::cmd::RunOnce([] { double test = 1 + 1; }); 
-    });
-    straightTraj = factory.Trajectory("Straight", loop);
-    loop.Enabled().OnTrue(frc2::cmd::RunOnce([this] {
-                            swerveSub.ResetPose(
-                                straightTraj.GetInitialPose().value(), true);
-                          }).AndThen(straightTraj.Cmd()));
 
-    return loop.Cmd().WithName("Test Auto Loop Cmd");
   }
 
  private:

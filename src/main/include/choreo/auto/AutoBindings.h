@@ -44,7 +44,10 @@ class AutoBindings {
    */
   AutoBindings& Bind(std::string_view name,
                      std::function<frc2::CommandPtr()> cmd) & {
-    bindings.emplace(name, std::move(cmd));
+    auto pair = bindings.insert_or_assign(std::string{name}, cmd);
+    if(!pair.second) {
+      fmt::print("UNABLE TO INSERT!!!!\n");
+    }
     return *this;
   }
 
@@ -61,7 +64,7 @@ class AutoBindings {
  private:
   void Merge(AutoBindings&& other) {
     for (auto& [key, value] : other.bindings) {
-      bindings.emplace(std::move(key), std::move(value));
+      bindings.emplace(key, value);
     }
     other.bindings.clear();
   }

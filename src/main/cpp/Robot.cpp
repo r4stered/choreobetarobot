@@ -26,25 +26,12 @@ void Robot::RobotInit() {
       {&drivetrain}));
 
   rotationController.EnableContinuousInput(-std::numbers::pi, std::numbers::pi);
-
-  chooser.AddAutoRoutine("ONLY STRAIGHT",
-                         [this]() { return routines.TestAuto(); });
-
-  chooser.Choose("ONLY STRAIGHT");
 }
 
 void Robot::RobotPeriodic() {
   drivetrain.Log();
-  try {
-    // Your existing code here
-    frc2::CommandScheduler::GetInstance().Run();
-  } catch (const std::exception& e) {
-    fmt::print("Caught exception in AutonomousPeriodic: {}\n", e.what());
-  } catch (...) {
-    fmt::print("Caught unknown exception in AutonomousPeriodic\n");
-  }
+  frc2::CommandScheduler::GetInstance().Run();
   frc::SmartDashboard::PutData("FRC Field", &debugField);
-  chooser.Update();
 }
 
 void Robot::DisabledInit() {}
@@ -56,7 +43,16 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-  m_autonomousCommand = chooser.GetSelectedAutoRoutine();
+  autoFactory.Bind("test", [] {
+    return frc2::cmd::Print("Hello from test marker").WithName("TEST AUTO LAMBDA COMMAND"); 
+  });
+  straightTraj = autoFactory.Trajectory("Straight", loop);
+  loop.Enabled().OnTrue(frc2::cmd::RunOnce([this] {
+                          drivetrain.ResetPose(
+                              straightTraj.GetInitialPose().value(), true);
+                        }).AndThen(straightTraj.Cmd()).WithName("Straight Traj Name"));
+
+  m_autonomousCommand = loop.Cmd().WithName("Test Auto Loop Cmd");
 
   if (m_autonomousCommand.has_value()) {
     m_autonomousCommand->Schedule();
