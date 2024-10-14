@@ -44,10 +44,7 @@ class AutoBindings {
    */
   AutoBindings& Bind(std::string_view name,
                      std::function<frc2::CommandPtr()> cmd) & {
-    auto pair = bindings.insert_or_assign(std::string{name}, cmd);
-    if(!pair.second) {
-      fmt::print("UNABLE TO INSERT!!!!\n");
-    }
+    bindings.emplace(name, cmd);
     return *this;
   }
 

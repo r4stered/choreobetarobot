@@ -3,6 +3,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string_view>
 #include <utility>
 
@@ -55,7 +56,7 @@ namespace choreo {
  * </code></pre>
  *
  * @tparam SampleType The type of samples in the trajectory.
- * @tparam Year The field year.
+ * @tparam Year The field year. Defaults to the current year.
  */
 template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoFactory {
@@ -172,9 +173,9 @@ class AutoFactory {
    * @param name The name of the trajectory to bind the command to.
    * @param cmdFactory A function that retuns a CommandPtr to bind
    */
-  void Bind(std::string name,
+  void Bind(std::string_view name,
             std::function<frc2::CommandPtr()> cmdFactory) {
-    autoBindings->Bind(name, cmdFactory);
+    autoBindings->Bind(name, std::move(cmdFactory));
   }
 
   /**

@@ -7,12 +7,13 @@
 #include <string>
 #include <utility>
 
-#include <frc2/command/Commands.h>
 #include <frc/DriverStation.h>
+#include <frc/event/EventLoop.h>
+#include <frc2/command/Commands.h>
+#include <frc2/command/button/Trigger.h>
+
 #include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
-#include <frc/event/EventLoop.h>
-#include <frc2/command/button/Trigger.h>
 
 namespace choreo {
 
@@ -23,7 +24,7 @@ namespace choreo {
  * This loop should **not** be shared across multiple autonomous routines.
  *
  * @tparam SampleType The type of samples in the trajectory.
- * @tparam The field year (default: the current year).
+ * @tparam The field year. Defaults to the current year.
  */
 template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoLoop {

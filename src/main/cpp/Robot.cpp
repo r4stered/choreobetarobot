@@ -10,6 +10,7 @@
 #include <frc/simulation/RoboRioSim.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/MathUtil.h>
+#include "frc2/command/CommandPtr.h"
 #include "frc2/command/Commands.h"
 
 void Robot::RobotInit() {
@@ -43,14 +44,14 @@ void Robot::DisabledPeriodic() {
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-  autoFactory.Bind("test", [] {
-    return frc2::cmd::Print("Hello from test marker").WithName("TEST AUTO LAMBDA COMMAND"); 
-  });
+  autoFactory.Bind("test", [] { return frc2::cmd::Print("Hello from marker"); });
   straightTraj = autoFactory.Trajectory("Straight", loop);
   loop.Enabled().OnTrue(frc2::cmd::RunOnce([this] {
                           drivetrain.ResetPose(
                               straightTraj.GetInitialPose().value(), true);
-                        }).AndThen(straightTraj.Cmd()).WithName("Straight Traj Name"));
+                        })
+                            .AndThen(straightTraj.Cmd())
+                            .WithName("Straight Traj Name"));
 
   m_autonomousCommand = loop.Cmd().WithName("Test Auto Loop Cmd");
 

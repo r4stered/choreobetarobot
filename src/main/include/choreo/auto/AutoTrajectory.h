@@ -13,6 +13,7 @@
 #include <frc/DriverStation.h>
 #include <frc/Timer.h>
 #include <frc2/command/Command.h>
+#include <frc2/command/CommandScheduler.h>
 #include <frc2/command/Commands.h>
 #include <frc2/command/button/Trigger.h>
 #include <units/length.h>
@@ -22,7 +23,6 @@
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
-#include "frc2/command/CommandScheduler.h"
 
 namespace choreo {
 
@@ -46,9 +46,13 @@ struct ScheduledEvent {
    */
   std::string name;
   /**
-   * The CommandPtr to run
+   * The Command Factory to get the command from
    */
   std::function<frc2::CommandPtr()> commandFactory;
+  /**
+   * The CommandPtr to run
+   */
+  frc2::CommandPtr command;
   /**
    * If the event has been triggered yet
    */
@@ -60,7 +64,7 @@ struct ScheduledEvent {
  * routine and have triggers based off of it.
  *
  * @tparam SampleType The type of samples in the trajectory.
- * @tparam Year The field year.
+ * @tparam Year The field year. Defaults to the current year.
  */
 template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoTrajectory {
@@ -302,7 +306,8 @@ class AutoTrajectory {
 
     for (const auto& event : trajectory.GetEvents(eventName)) {
       frc::Pose2d pose =
-          trajectory.template SampleAt<Year>(event.timestamp, mirrorTrajectory())
+          trajectory
+              .template SampleAt<Year>(event.timestamp, mirrorTrajectory())
               .GetPose();
       trig = frc2::Trigger(trig || AtPose(pose, tolerance));
       foundEvent = true;
@@ -391,10 +396,11 @@ class AutoTrajectory {
         }};
   }
 
-  void AddScheduledEvent(std::string_view eventName, std::function<frc2::CommandPtr()> cmdFactory) {
+  void AddScheduledEvent(std::string_view eventName,
+                         std::function<frc2::CommandPtr()> cmdFactory) {
     for (const auto& event : trajectory.GetEvents(eventName)) {
-      scheduledEvents.push_back(
-          {event.timestamp, std::string(eventName), cmdFactory, false});
+      scheduledEvents.push_back({event.timestamp, std::string(eventName),
+                                 cmdFactory, frc2::cmd::None(), false});
     }
   }
 
@@ -403,7 +409,8 @@ class AutoTrajectory {
     for (auto& event : scheduledEvents) {
       if (!event.hasTriggered && isActive && currentTime >= event.triggerTime) {
         event.hasTriggered = true;
-        frc2::CommandScheduler::GetInstance().Schedule(event.commandFactory());
+        event.command = event.commandFactory();
+        event.command.Schedule();
       }
     }
   }

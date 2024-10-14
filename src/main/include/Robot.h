@@ -81,7 +81,7 @@ class Robot : public frc::TimedRobot {
               ->SetPoses(trajectory.GetPoses());
         }
       }};
-    
+
   choreo::AutoLoop<choreo::SwerveSample> loop{autoFactory.NewLoop("Auto Loop")};
   choreo::AutoTrajectory<choreo::SwerveSample> straightTraj;
 
