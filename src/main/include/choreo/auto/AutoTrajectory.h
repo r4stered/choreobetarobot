@@ -302,7 +302,7 @@ class AutoTrajectory {
 
     for (const auto& event : trajectory.GetEvents(eventName)) {
       frc::Pose2d pose =
-          trajectory.SampleAt<Year>(event.timestamp, mirrorTrajectory())
+          trajectory.template SampleAt<Year>(event.timestamp, mirrorTrajectory())
               .GetPose();
       trig = frc2::Trigger(trig || AtPose(pose, tolerance));
       foundEvent = true;
@@ -360,7 +360,7 @@ class AutoTrajectory {
 
   void CmdExecute() {
     auto sampleOpt =
-        trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
+        trajectory.template SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
     controller(poseSupplier(), sampleOpt.value());
     currentSample = sampleOpt.value();
   }
