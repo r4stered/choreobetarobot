@@ -82,8 +82,11 @@ class Robot : public frc::TimedRobot {
         }
       }};
 
-  choreo::AutoLoop<choreo::SwerveSample> loop{autoFactory.NewLoop("Auto Loop")};
-  choreo::AutoTrajectory<choreo::SwerveSample> straightTraj;
+
+  AutoRoutines routines{drivetrain, autoFactory};
+
+  choreo::AutoChooser<choreo::SwerveSample> chooser{autoFactory,
+                                                    "DREWSCHOOSER"};
 
   std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Field2d debugField;

@@ -17,12 +17,21 @@ class AutoRoutines {
         loop{factory.NewLoop("Auto Routine Loops")} {}
 
   frc2::CommandPtr TestAuto() {
+    factory.Bind("test", [] { return frc2::cmd::Print("Hello from marker"); });
+    straightTraj = factory.Trajectory("Straight", loop);
 
+    loop.Enabled().OnTrue(frc2::cmd::RunOnce([this] {
+                      swerveSub.ResetPose(
+                          straightTraj.GetInitialPose().value(), true);
+                    })
+                    .AndThen(straightTraj.Cmd())
+                    .WithName("Straight Traj Name"));
+    return loop.Cmd().WithName("Test Auto Loop Cmd");
   }
 
  private:
   SwerveDrive& swerveSub;
+  choreo::AutoTrajectory<choreo::SwerveSample> straightTraj;
   choreo::AutoFactory<choreo::SwerveSample>& factory;
   choreo::AutoLoop<choreo::SwerveSample> loop;
-  choreo::AutoTrajectory<choreo::SwerveSample> straightTraj;
 };
