@@ -18,7 +18,7 @@ class AutoRoutines {
 
   frc2::CommandPtr TestAuto() {
     factory.Bind("test", [] { return frc2::cmd::Print("Hello from marker"); });
-    straightTraj = factory.Trajectory("Straight", loop);
+    straightTraj = factory.Trajectory("Straight", 1, loop);
 
     loop.Enabled().OnTrue(frc2::cmd::RunOnce([this] {
                       swerveSub.ResetPose(

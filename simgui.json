@@ -15,6 +15,11 @@
       "/SmartDashboard/FRC Field": "Field2d"
     },
     "windows": {
+      "/DREWSCHOOSER/AutoChooser": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/FRC Field": {
         "Choreo Trajectory": {
           "arrows": false,

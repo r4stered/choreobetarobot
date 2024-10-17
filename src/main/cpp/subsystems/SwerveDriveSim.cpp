@@ -56,7 +56,7 @@ SwerveDriveSim::SwerveDriveSim(
 void SwerveDriveSim::SetDriveInputs(
     const std::array<units::volt_t, numModules>& inputs) {
   units::volt_t battVoltage = 12_V;
-  for (int i = 0; i < driveInputs.size(); i++) {
+  for (std::size_t i = 0; i < driveInputs.size(); i++) {
     units::volt_t input = inputs[i];
     driveInputs[i] = std::clamp(input, -battVoltage, battVoltage);
   }
@@ -65,7 +65,7 @@ void SwerveDriveSim::SetDriveInputs(
 void SwerveDriveSim::SetSteerInputs(
     const std::array<units::volt_t, numModules>& inputs) {
   units::volt_t battVoltage = 12_V;
-  for (int i = 0; i < steerInputs.size(); i++) {
+  for (std::size_t i = 0; i < steerInputs.size(); i++) {
     units::volt_t input = inputs[i];
     steerInputs[i] = std::clamp(input, -battVoltage, battVoltage);
   }
@@ -238,8 +238,8 @@ std::array<units::ampere_t, numModules> SwerveDriveSim::GetSteerCurrentDraw()
     const {
   std::array<units::ampere_t, numModules> currents;
   for (int i = 0; i < numModules; i++) {
-    units::radians_per_second_t speed =
-        units::radians_per_second_t{steerStates[i](1, 0) * steerGearing};
+    // units::radians_per_second_t speed =
+    //     units::radians_per_second_t{steerStates[i](1, 0) * steerGearing};
     // TODO: If uncommented we get huge current values.. Not sure how to fix
     // atm. :(
     currents[i] = 20_A;
